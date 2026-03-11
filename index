@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiet Steps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #ffffff; color: #333333; }
+        .mincho { font-family: 'Noto Serif JP', serif; }
+        .gothic { font-family: sans-serif; }
+        .fade-in { animation: fadeIn 1.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-6">
+
+    <main class="w-full max-w-xl mt-24">
+        <textarea id="userInput" class="gothic w-full h-40 text-lg border-none focus:ring-0 resize-none placeholder-gray-300" 
+            placeholder="今日一日の出来事を記載してください..."></textarea>
+        
+        <div class="mt-6 flex justify-end">
+            <button onclick="sendAction()" id="sendBtn" class="gothic px-8 py-2 text-sm border border-gray-200 hover:bg-gray-50 transition">
+                刻む
+            </button>
+        </div>
+    </main>
+
+    <section id="result" class="w-full max-w-xl mt-32 hidden">
+        <h2 id="quote" class="mincho text-2xl md:text-3xl leading-relaxed mb-2"></h2>
+        <p id="author" class="mincho text-[10px] text-gray-400 mb-10 tracking-widest"></p>
+        <p id="comment" class="mincho text-sm text-gray-600 leading-loose"></p>
+    </section>
+
+    <footer class="mt-auto w-full max-w-lg h-16 border-t border-gray-100 flex items-center justify-center">
+        <span class="gothic text-[10px] text-gray-300 tracking-tighter text-center">ADVERTISEMENT</span>
+    </footer>
+
+    <script>
+        async function sendAction() {
+            const text = document.getElementById('userInput').value;
+            if(!text) return;
+
+            const btn = document.getElementById('sendBtn');
+            const resultDiv = document.getElementById('result');
+            btn.disabled = true;
+            btn.innerText = "...";
+
+            try {
+                // WorkersのURLを指定
+                const res = await fetch('https://あなたのWORKERS名.workers.dev', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+
+                document.getElementById('quote').innerText = `『${data.quote}』`;
+                document.getElementById('author').innerText = data.author;
+                document.getElementById('comment').innerText = data.comment;
+                
+                resultDiv.classList.remove('hidden');
+                resultDiv.classList.add('fade-in');
+            } catch (e) {
+                alert("賢者は今、瞑想中のようです。");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "刻む";
+            }
+        }
+    </script>
+</body>
+</html>
