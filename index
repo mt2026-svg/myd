@@ -49,7 +49,7 @@
 
             try {
                 // WorkersのURLを指定
-                const res = await fetch('https://あなたのWORKERS名.workers.dev', {
+                const res = await fetch('https://makeyourdreem.takahara-design.workers.dev/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text })
