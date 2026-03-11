@@ -14,29 +14,25 @@
         .mincho { font-family: 'Noto Serif JP', serif; }
         .gothic { font-family: sans-serif; }
         
-        /* 呼吸するドットのアニメーション */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.1; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.1; } }
         .loading-dots { animation: pulse 1.5s infinite; }
 
-        /* 1文字ずつフェードイン */
         .char {
             display: inline-block;
             opacity: 0;
             transform: translateY(10px);
             animation: charFade 0.8s ease forwards;
         }
-        @keyframes charFade {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes charFade { to { opacity: 1; transform: translateY(0); } }
 
-        /* 改行をきれいに（単語の途中で切れないようにする） */
+        /* 【修正ポイント】句読点のぶら下げと改行制御 */
         .pretty-wrap {
             display: inline-block;
-            word-break: keep-all;
+            text-align: center;
+            word-break: auto-phrase; /* 文脈で区切る */
             overflow-wrap: anywhere;
+            hanging-punctuation: last allow-end; /* 句読点を外に出す */
+            line-break: strict; /* 句読点を行頭に置かない */
         }
     </style>
 </head>
@@ -44,7 +40,6 @@
 
     <main class="w-full max-w-xl px-6 flex flex-col">
         <div id="todayDate" class="mt-20 mb-2 text-[10px] text-gray-400 tracking-widest pl-4"></div>
-        
         <textarea id="userInput" maxlength="1000" class="gothic w-full h-40 text-lg border-none p-4 focus:ring-0 resize-none placeholder-gray-300 transition-colors duration-500" 
             placeholder="今日一日の出来事を記載してください..."></textarea>
         
@@ -55,17 +50,16 @@
         </div>
     </main>
 
-    <section id="result" class="w-full max-w-2xl px-6 hidden flex-col">
-        
+    <section id="result" class="w-full max-w-4xl px-4 hidden flex-col">
         <div class="flex flex-col items-center text-center mt-32 mb-10">
-            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-tight text-gray-900 mb-10 font-bold px-4 pretty-wrap"></h2>
+            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-[1.3] text-gray-900 mb-12 font-bold px-2 pretty-wrap"></h2>
             
             <p id="authorContainer" class="mincho text-xs text-gray-400 tracking-widest cursor-pointer hover:text-gray-600 transition underline decoration-gray-200 underline-offset-4">
                 <span id="author"></span>
             </p>
         </div>
 
-        <div class="flex flex-col items-center text-center mb-24 px-4">
+        <div class="flex flex-col items-center text-center mb-24 px-6">
             <p id="comment" class="mincho text-sm text-gray-500 leading-loose max-w-md opacity-0 transition-opacity duration-1000"></p>
         </div>
         
@@ -85,7 +79,6 @@
     </footer>
 
     <script>
-        // 1. 今日の日付をセット
         const now = new Date();
         const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
         document.getElementById('todayDate').innerText = dateStr;
@@ -99,7 +92,6 @@
             const inputArea = document.getElementById('userInput');
             const resultDiv = document.getElementById('result');
             
-            // 2. 状態変更（ボタンアニメーション・背景グレー）
             btn.disabled = true;
             btnText.innerHTML = '<span class="loading-dots">・・・</span>';
             inputArea.classList.add('bg-gray-50');
@@ -114,26 +106,32 @@
                 const data = await res.json();
 
                 if (data.quote) {
-                    // 3. 名言を1文字ずつアニメーションさせる準備
                     const quoteElem = document.getElementById('quote');
-                    quoteElem.innerHTML = ''; // クリア
-                    const fullText = `『${data.quote}』`;
+                    quoteElem.innerHTML = '';
                     
-                    fullText.split('').forEach((char, i) => {
+                    // 【修正】末尾の「。」を前の文字とセットにして泣き別れを防ぐ
+                    const fullText = `『${data.quote}』`;
+                    const chars = fullText.split('');
+                    
+                    chars.forEach((char, i) => {
                         const span = document.createElement('span');
                         span.innerText = char;
                         span.className = 'char';
-                        span.style.animationDelay = `${i * 0.1}s`; // 0.1秒ずつずらす
+                        span.style.animationDelay = `${i * 0.08}s`;
+                        
+                        // 「。」「』」が行頭に来ないように、直前の文字との結合を促す
+                        if (char === '。' || char === '』') {
+                            span.style.display = 'inline'; 
+                        }
+                        
                         quoteElem.appendChild(span);
                     });
 
-                    // 4. 偉人名と詳細リンクの設定
                     document.getElementById('author').innerText = data.author;
                     document.getElementById('authorContainer').onclick = () => {
                         window.open(`https://www.google.com/search?q=${encodeURIComponent(data.author)}`, '_blank');
                     };
 
-                    // 5. コメントの反映
                     const commentElem = document.getElementById('comment');
                     commentElem.innerText = data.comment;
                     commentElem.classList.remove('opacity-0');
