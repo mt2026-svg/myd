@@ -6,19 +6,17 @@
     <title>Quiet Steps</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7842538127368354" crossorigin="anonymous"></script>
+
     <style>
         body { background-color: #ffffff; color: #333333; }
         .mincho { font-family: 'Noto Serif JP', serif; }
         .gothic { font-family: sans-serif; }
         .fade-in { animation: fadeIn 1s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* AdSenseの枠用（画像に合わせて灰色に） */
-        .adsbygoogle-placeholder {
-            background-color: #f5f5f5;
-            border: 1px solid #eeeeee;
-        }
     </style>
-    </head>
+</head>
 <body class="min-h-screen flex flex-col items-center gothic">
 
     <main class="w-full max-w-xl mt-24 px-6 flex flex-col items-center">
@@ -39,9 +37,15 @@
         <p id="comment" class="mincho text-sm text-gray-600 leading-loose mb-16"></p>
 
         <div class="w-full mb-12 flex justify-center">
-            <div class="adsbygoogle-placeholder w-full h-40 flex items-center justify-center border border-dashed border-gray-300">
-                <span class="text-3xl text-gray-300 gothic font-bold">広告</span>
-            </div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-7842538127368354"
+                 data-ad-slot="8651453819"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
     </section>
 
@@ -60,7 +64,6 @@
             btn.innerText = "...";
 
             try {
-                // ここはご自身のWorkers URLのままにしてください
                 const res = await fetch('https://makeyourdreem.takahara-design.workers.dev', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -77,9 +80,6 @@
                     
                     resultDiv.classList.remove('hidden');
                     resultDiv.classList.add('fade-in');
-
-                    // 広告枠のサイズを自動調整する場合（AdSenseが動作した時）
-                    // (window.adsbygoogle = window.adsbygoogle || []).push({});
                 } else {
                     throw new Error("Invalid response format");
                 }
