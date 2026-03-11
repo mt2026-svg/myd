@@ -48,22 +48,29 @@
             btn.innerText = "...";
 
             try {
-                // WorkersのURLを指定
-                const res = await fetch('https://makeyourdreem.takahara-design.workers.dev/', {
+                // ここはご自身のWorkers URLのままにしてください
+                const res = await fetch('https://makeyourdreem.takahara-design.workers.dev', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
+                    body: JSON.stringify({ 
+                        text: `${text}\n※回答は必ず日本語の名言を引用してください。` // <- ここでGeminiに日本語を指示
+                    })
                 });
                 const data = await res.json();
 
-                document.getElementById('quote').innerText = `『${data.quote}』`;
-                document.getElementById('author').innerText = data.author;
-                document.getElementById('comment').innerText = data.comment;
-                
-                resultDiv.classList.remove('hidden');
-                resultDiv.classList.add('fade-in');
+                if (data.quote) {
+                    document.getElementById('quote').innerText = `『${data.quote}』`;
+                    document.getElementById('author').innerText = data.author;
+                    document.getElementById('comment').innerText = data.comment;
+                    
+                    resultDiv.classList.remove('hidden');
+                    resultDiv.classList.add('fade-in');
+                } else {
+                    throw new Error("Invalid response format");
+                }
             } catch (e) {
                 alert("賢者は今、瞑想中のようです。");
+                console.error(e);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "刻む";
