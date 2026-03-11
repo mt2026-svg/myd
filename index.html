@@ -15,10 +15,7 @@
         .gothic { font-family: sans-serif; }
         .fade-in { animation: fadeIn 1s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* AdSenseの枠用（画像に合わせて灰色に） */
-        .adsbygoogle-placeholder {
-            background-color: #928b8b; /* 画像に近いグレー */
-        }
+        .adsbygoogle-placeholder { background-color: #928b8b; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center gothic">
@@ -32,15 +29,15 @@
         </button>
     </main>
 
-    <section id="result" class="w-full max-w-xl px-6 hidden flex-col flex-grow">
+    <section id="result" class="w-full max-w-xl px-6 hidden flex-col">
         
-        <div class="flex-grow flex flex-col items-center justify-center text-center mt-32 mb-20">
+        <div class="flex flex-col items-center text-center mt-24 mb-16">
             <h2 id="quote" class="mincho text-4xl md:text-5xl leading-tight text-gray-900 mb-6 font-bold px-4"></h2>
             <p id="author" class="mincho text-xs text-gray-400 tracking-widest"></p>
         </div>
         
         <div class="w-full mb-12 flex justify-center">
-            <ins class="adsbygoogleadsbygoogle-placeholder"
+            <ins class="adsbygoogle"
                  style="display:block;width:100%;height:150px;" 
                  data-ad-client="ca-pub-7842538127368354"
                  data-ad-slot="8651453819"
@@ -63,13 +60,11 @@
 
             const btn = document.getElementById('sendBtn');
             const resultDiv = document.getElementById('result');
-            // 入力欄を隠す（イメージ図の再現のため）
-            document.querySelector('main').classList.add('hidden');
+            
             btn.disabled = true;
             btn.innerText = "...";
 
             try {
-                // Workers URLが正しいか確認
                 const res = await fetch('https://makeyourdreem.takahara-design.workers.dev', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -80,20 +75,18 @@
                 const data = await res.json();
 
                 if (data.quote) {
-                    // 『』で囲む処理を削除（画像に合わせて）
-                    document.getElementById('quote').innerText = data.quote;
+                    document.getElementById('quote').innerText = `『${data.quote}』`;
                     document.getElementById('author').innerText = data.author;
                     
                     resultDiv.classList.remove('hidden');
-                    resultDiv.classList.add('flex', 'fade-in'); // hiddenを消してflexとアニメーション
-                } else {
-                    throw new Error("Invalid response format");
+                    resultDiv.classList.add('flex', 'fade-in');
+                    
+                    // 結果が表示されたら、そこまで自動でスクロールさせる
+                    resultDiv.scrollIntoView({ behavior: 'smooth' });
                 }
             } catch (e) {
                 alert("賢者は今、瞑想中のようです。");
                 console.error(e);
-                // エラー時は入力欄を再表示
-                document.querySelector('main').classList.remove('hidden');
             } finally {
                 btn.disabled = false;
                 btn.innerText = "刻む";
