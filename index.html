@@ -15,7 +15,6 @@
         .gothic { font-family: sans-serif; }
         .fade-in { animation: fadeIn 1s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .adsbygoogle-placeholder { background-color: #928b8b; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center gothic">
@@ -31,9 +30,13 @@
 
     <section id="result" class="w-full max-w-xl px-6 hidden flex-col">
         
-        <div class="flex flex-col items-center text-center mt-24 mb-16">
-            <h2 id="quote" class="mincho text-4xl md:text-5xl leading-tight text-gray-900 mb-6 font-bold px-4"></h2>
+        <div class="flex flex-col items-center text-center mt-24 mb-10">
+            <h2 id="quote" class="mincho text-4xl md:text-5xl leading-tight text-gray-900 mb-6 font-bold px-4 tracking-tighter"></h2>
             <p id="author" class="mincho text-xs text-gray-400 tracking-widest"></p>
+        </div>
+
+        <div class="flex flex-col items-center text-center mb-20 px-4">
+            <p id="comment" class="mincho text-sm text-gray-600 leading-loose max-w-md"></p>
         </div>
         
         <div class="w-full mb-12 flex justify-center">
@@ -75,14 +78,18 @@
                 const data = await res.json();
 
                 if (data.quote) {
+                    // 画面にデータを流し込む
                     document.getElementById('quote').innerText = `『${data.quote}』`;
                     document.getElementById('author').innerText = data.author;
+                    document.getElementById('comment').innerText = data.comment; // コメントを反映
                     
                     resultDiv.classList.remove('hidden');
                     resultDiv.classList.add('flex', 'fade-in');
                     
-                    // 結果が表示されたら、そこまで自動でスクロールさせる
-                    resultDiv.scrollIntoView({ behavior: 'smooth' });
+                    // スムーズに結果画面へスクロール
+                    setTimeout(() => {
+                        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 }
             } catch (e) {
                 alert("賢者は今、瞑想中のようです。");
