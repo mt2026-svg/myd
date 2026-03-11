@@ -25,14 +25,21 @@
         }
         @keyframes charFade { to { opacity: 1; transform: translateY(0); } }
 
-        /* 【修正ポイント】句読点のぶら下げと改行制御 */
+        /* 改行と句読点の制御を強化 */
         .pretty-wrap {
             display: inline-block;
             text-align: center;
-            word-break: auto-phrase; /* 文脈で区切る */
+            /* 句読点を行頭に置かない設定 */
+            line-break: strict;
             overflow-wrap: anywhere;
-            hanging-punctuation: last allow-end; /* 句読点を外に出す */
-            line-break: strict; /* 句読点を行頭に置かない */
+            /* 文脈での区切りを優先 */
+            word-break: auto-phrase; 
+        }
+
+        /* 広告エラー対策：最初から幅を確保しておく */
+        #ad-container {
+            min-height: 150px;
+            transition: opacity 1s ease;
         }
     </style>
 </head>
@@ -52,7 +59,7 @@
 
     <section id="result" class="w-full max-w-4xl px-4 hidden flex-col">
         <div class="flex flex-col items-center text-center mt-32 mb-10">
-            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-[1.3] text-gray-900 mb-12 font-bold px-2 pretty-wrap"></h2>
+            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-[1.4] text-gray-900 mb-12 font-bold px-2 pretty-wrap"></h2>
             
             <p id="authorContainer" class="mincho text-xs text-gray-400 tracking-widest cursor-pointer hover:text-gray-600 transition underline decoration-gray-200 underline-offset-4">
                 <span id="author"></span>
@@ -63,14 +70,13 @@
             <p id="comment" class="mincho text-sm text-gray-500 leading-loose max-w-md opacity-0 transition-opacity duration-1000"></p>
         </div>
         
-        <div class="w-full mb-12 flex justify-center">
+        <div id="ad-container" class="w-full mb-12 flex justify-center opacity-0">
             <ins class="adsbygoogle"
-                 style="display:block;width:100%;height:150px;" 
+                 style="display:block;width:100%;" 
                  data-ad-client="ca-pub-7842538127368354"
                  data-ad-slot="8651453819"
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
     </section>
 
@@ -82,6 +88,9 @@
         const now = new Date();
         const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
         document.getElementById('todayDate').innerText = dateStr;
+
+        // 広告の初期化を事前に行う
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
 
         async function sendAction() {
             const text = document.getElementById('userInput').value;
@@ -95,7 +104,6 @@
             btn.disabled = true;
             btnText.innerHTML = '<span class="loading-dots">・・・</span>';
             inputArea.classList.add('bg-gray-50');
-            inputArea.readOnly = true;
 
             try {
                 const res = await fetch('https://makeyourdreem.takahara-design.workers.dev', {
@@ -109,7 +117,6 @@
                     const quoteElem = document.getElementById('quote');
                     quoteElem.innerHTML = '';
                     
-                    // 【修正】末尾の「。」を前の文字とセットにして泣き別れを防ぐ
                     const fullText = `『${data.quote}』`;
                     const chars = fullText.split('');
                     
@@ -119,9 +126,9 @@
                         span.className = 'char';
                         span.style.animationDelay = `${i * 0.08}s`;
                         
-                        // 「。」「』」が行頭に来ないように、直前の文字との結合を促す
-                        if (char === '。' || char === '』') {
-                            span.style.display = 'inline'; 
+                        // 句読点や閉じカッコを前の文字と離さないための処理
+                        if ("、。』」".includes(char)) {
+                            span.style.whiteSpace = "nowrap";
                         }
                         
                         quoteElem.appendChild(span);
@@ -138,15 +145,16 @@
 
                     resultDiv.classList.remove('hidden');
                     resultDiv.classList.add('flex');
+                    // 広告をフェードイン
+                    document.getElementById('ad-container').classList.remove('opacity-0');
                     
                     setTimeout(() => {
                         resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }, 500);
                 }
             } catch (e) {
-                alert("賢者は今、瞑想中のようです。");
+                alert("通信に失敗しました。時間をおいて再度お試しください。");
                 inputArea.classList.remove('bg-gray-50');
-                inputArea.readOnly = false;
             } finally {
                 btn.disabled = false;
                 btnText.innerText = "刻む";
