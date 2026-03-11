@@ -25,21 +25,14 @@
         }
         @keyframes charFade { to { opacity: 1; transform: translateY(0); } }
 
-        /* 改行と句読点の制御を強化 */
+        /* 究極の改行制御 */
         .pretty-wrap {
             display: inline-block;
             text-align: center;
-            /* 句読点を行頭に置かない設定 */
             line-break: strict;
-            overflow-wrap: anywhere;
-            /* 文脈での区切りを優先 */
-            word-break: auto-phrase; 
-        }
-
-        /* 広告エラー対策：最初から幅を確保しておく */
-        #ad-container {
-            min-height: 150px;
-            transition: opacity 1s ease;
+            word-break: keep-all; /* 単語の途中での改行を極力防ぐ */
+            overflow-wrap: break-word;
+            padding: 0 1rem;
         }
     </style>
 </head>
@@ -59,7 +52,7 @@
 
     <section id="result" class="w-full max-w-4xl px-4 hidden flex-col">
         <div class="flex flex-col items-center text-center mt-32 mb-10">
-            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-[1.4] text-gray-900 mb-12 font-bold px-2 pretty-wrap"></h2>
+            <h2 id="quote" class="mincho text-5xl md:text-7xl leading-[1.6] text-gray-900 mb-12 font-bold pretty-wrap"></h2>
             
             <p id="authorContainer" class="mincho text-xs text-gray-400 tracking-widest cursor-pointer hover:text-gray-600 transition underline decoration-gray-200 underline-offset-4">
                 <span id="author"></span>
@@ -72,7 +65,7 @@
         
         <div id="ad-container" class="w-full mb-12 flex justify-center opacity-0">
             <ins class="adsbygoogle"
-                 style="display:block;width:100%;" 
+                 style="display:block;width:100%;min-height:150px;" 
                  data-ad-client="ca-pub-7842538127368354"
                  data-ad-slot="8651453819"
                  data-ad-format="auto"
@@ -89,7 +82,6 @@
         const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
         document.getElementById('todayDate').innerText = dateStr;
 
-        // 広告の初期化を事前に行う
         (window.adsbygoogle = window.adsbygoogle || []).push({});
 
         async function sendAction() {
@@ -118,19 +110,17 @@
                     quoteElem.innerHTML = '';
                     
                     const fullText = `『${data.quote}』`;
-                    const chars = fullText.split('');
                     
-                    chars.forEach((char, i) => {
+                    // 改行を調整するための特別な処理
+                    // 句読点などを前の文字とグループ化してspanに入れる
+                    const regex = /.[、。』」]?/g;
+                    const segments = fullText.match(regex) || [];
+                    
+                    segments.forEach((seg, i) => {
                         const span = document.createElement('span');
-                        span.innerText = char;
+                        span.innerText = seg;
                         span.className = 'char';
-                        span.style.animationDelay = `${i * 0.08}s`;
-                        
-                        // 句読点や閉じカッコを前の文字と離さないための処理
-                        if ("、。』」".includes(char)) {
-                            span.style.whiteSpace = "nowrap";
-                        }
-                        
+                        span.style.animationDelay = `${i * 0.15}s`; // 少しゆっくり出す
                         quoteElem.appendChild(span);
                     });
 
@@ -145,7 +135,6 @@
 
                     resultDiv.classList.remove('hidden');
                     resultDiv.classList.add('flex');
-                    // 広告をフェードイン
                     document.getElementById('ad-container').classList.remove('opacity-0');
                     
                     setTimeout(() => {
@@ -153,7 +142,7 @@
                     }, 500);
                 }
             } catch (e) {
-                alert("通信に失敗しました。時間をおいて再度お試しください。");
+                alert("通信に失敗しました。");
                 inputArea.classList.remove('bg-gray-50');
             } finally {
                 btn.disabled = false;
