@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiet Steps</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7842538127368354" crossorigin="anonymous"></script>
 
@@ -15,30 +15,33 @@
         .gothic { font-family: sans-serif; }
         .fade-in { animation: fadeIn 1s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* AdSenseの枠用（画像に合わせて灰色に） */
+        .adsbygoogle-placeholder {
+            background-color: #928b8b; /* 画像に近いグレー */
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center gothic">
 
-    <main class="w-full max-w-xl mt-24 px-6 flex flex-col items-center">
-        <textarea id="userInput" class="gothic w-full h-40 text-lg border border-gray-100 p-4 focus:ring-0 resize-none placeholder-gray-300" 
+    <main class="w-full max-w-xl px-6 flex flex-col items-center">
+        <textarea id="userInput" class="gothic w-full h-40 text-lg border-none p-4 mt-20 focus:ring-0 resize-none placeholder-gray-300" 
             placeholder="今日一日の出来事を記載してください..."></textarea>
         
-        <button onclick="sendAction()" id="sendBtn" class="gothic mt-6 px-12 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+        <button onclick="sendAction()" id="sendBtn" class="gothic w-40 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
             刻む
         </button>
     </main>
 
-    <section id="result" class="w-full max-w-xl mt-32 px-6 hidden">
+    <section id="result" class="w-full max-w-xl px-6 hidden flex-col flex-grow">
         
-        <h2 id="quote" class="mincho text-3xl md:text-4xl leading-relaxed text-gray-900 mb-2 font-medium"></h2>
+        <div class="flex-grow flex flex-col items-center justify-center text-center mt-32 mb-20">
+            <h2 id="quote" class="mincho text-4xl md:text-5xl leading-tight text-gray-900 mb-6 font-bold px-4"></h2>
+            <p id="author" class="mincho text-xs text-gray-400 tracking-widest"></p>
+        </div>
         
-        <p id="author" class="mincho text-[11px] text-gray-400 mb-12 tracking-widest pl-1"></p>
-        
-        <p id="comment" class="mincho text-sm text-gray-600 leading-loose mb-16"></p>
-
         <div class="w-full mb-12 flex justify-center">
-            <ins class="adsbygoogle"
-                 style="display:block"
+            <ins class="adsbygoogleadsbygoogle-placeholder"
+                 style="display:block;width:100%;height:150px;" 
                  data-ad-client="ca-pub-7842538127368354"
                  data-ad-slot="8651453819"
                  data-ad-format="auto"
@@ -49,7 +52,7 @@
         </div>
     </section>
 
-    <footer class="mt-auto w-full max-w-lg h-16 border-t border-gray-100 flex items-center justify-center">
+    <footer class="mt-auto w-full max-w-lg h-16 flex items-center justify-center">
         <span class="gothic text-[10px] text-gray-300 tracking-tighter text-center">ADVERTISEMENT</span>
     </footer>
 
@@ -60,10 +63,13 @@
 
             const btn = document.getElementById('sendBtn');
             const resultDiv = document.getElementById('result');
+            // 入力欄を隠す（イメージ図の再現のため）
+            document.querySelector('main').classList.add('hidden');
             btn.disabled = true;
             btn.innerText = "...";
 
             try {
+                // Workers URLが正しいか確認
                 const res = await fetch('https://makeyourdreem.takahara-design.workers.dev', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -74,18 +80,20 @@
                 const data = await res.json();
 
                 if (data.quote) {
-                    document.getElementById('quote').innerText = `『${data.quote}』`;
+                    // 『』で囲む処理を削除（画像に合わせて）
+                    document.getElementById('quote').innerText = data.quote;
                     document.getElementById('author').innerText = data.author;
-                    document.getElementById('comment').innerText = data.comment;
                     
                     resultDiv.classList.remove('hidden');
-                    resultDiv.classList.add('fade-in');
+                    resultDiv.classList.add('flex', 'fade-in'); // hiddenを消してflexとアニメーション
                 } else {
                     throw new Error("Invalid response format");
                 }
             } catch (e) {
                 alert("賢者は今、瞑想中のようです。");
                 console.error(e);
+                // エラー時は入力欄を再表示
+                document.querySelector('main').classList.remove('hidden');
             } finally {
                 btn.disabled = false;
                 btn.innerText = "刻む";
